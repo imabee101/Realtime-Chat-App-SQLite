@@ -4,7 +4,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 
 const db = new sqlite3.Database('./chat.db', (err) => {
   if (err) throw err;
