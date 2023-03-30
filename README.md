@@ -14,7 +14,7 @@ To install and run this chat application on your local machine, follow these ste
 
 1. Clone this repository:
 
-git clone https://github.com/your-username/chat-application.git
+git clone https://github.com/imabee101/Realtime-Chat-App-SQLite.git
 
 
 2. Navigate to the project directory:
