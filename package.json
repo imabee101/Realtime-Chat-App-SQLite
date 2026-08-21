@@ -1,18 +1,44 @@
 {
-  "name": "socketsio2",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^4.18.2",
-    "mongodb": "^5.1.0",
-    "socket.io": "^4.6.1",
-    "sqlite3": "^5.1.6"
-  }
+	"name": "realtime-chat-app-sqlite",
+	"version": "1.0.0",
+	"description": "Realtime chat app built with Express, Socket.IO, and SQLite",
+	"type": "module",
+	"engines": {
+		"node": ">=22"
+	},
+	"license": "MIT",
+	"scripts": {
+		"dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+		"dev:server": "tsx watch --env-file=.env src/server/index.ts",
+		"dev:client": "webpack --watch --mode development",
+		"build:server": "tsc -p tsconfig.server.build.json",
+		"build:client": "webpack --mode production",
+		"build": "npm run build:server && npm run build:client",
+		"start": "node dist/server/index.js",
+		"test": "tsx --test \"src/**/*.test.ts\"",
+		"typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+		"lint": "biome lint .",
+		"format": "biome format --write ."
+	},
+	"dependencies": {
+		"better-sqlite3": "13.0.3",
+		"express": "5.2.1",
+		"socket.io": "4.8.3",
+		"socket.io-client": "4.8.3",
+		"zod": "4.4.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.10",
+		"@fontsource/ibm-plex-mono": "5.3.0",
+		"@fontsource/space-grotesk": "5.3.0",
+		"@types/better-sqlite3": "9.6.0",
+		"@types/express": "5.0.6",
+		"@types/node": "24.13.3",
+		"concurrently": "10.0.5",
+		"ts-loader": "9.6.2",
+		"tsx": "4.23.12",
+		"typescript": "6.0.3",
+		"webpack": "5.109.2",
+		"webpack-cli": "7.2.2"
+	}
 }

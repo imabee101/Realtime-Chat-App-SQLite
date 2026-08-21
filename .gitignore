@@ -32,3 +32,13 @@ coverage/
 *.swo
 *.swn
 *.bak
+
+# Build output
+dist/
+public/bundle.js
+
+# Environment
+.env
+
+# SQLite data directory
+data/

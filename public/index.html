@@ -1,26 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <title>Chat App</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+	<title>Signal — Realtime Chat</title>
+	<link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div id="chat-container">
-    <div id="username-container">
-      <input id="username" type="text" placeholder="Enter your username" />
-      <button id="submit-username">Enter Chat</button>
-    </div>
-    <div id="chat-content" hidden>
-      <ul id="messages"></ul>
-      <form id="form">
-        <input id="message" type="text" placeholder="Type a message" autocomplete="off" />
-        <button>Send</button>
-      </form>
-    </div>
-  </div>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="main.js"></script>
+	<div id="app">
+		<header id="app-header">
+			<span class="wordmark">Signal</span>
+			<div class="header-status">
+				<span id="connection-status" class="connection-status" data-state="offline">
+					<span class="connection-dot" aria-hidden="true"></span>
+					<span id="connection-status-text">offline</span>
+				</span>
+				<span id="presence-count" class="presence-count">0 here</span>
+			</div>
+		</header>
+
+		<main id="main">
+			<section id="join-screen" class="join-screen">
+				<form id="join-form" class="join-form" novalidate>
+					<h1>Join the room</h1>
+					<label for="username-input">Username</label>
+					<input
+						id="username-input"
+						name="username"
+						type="text"
+						autocomplete="off"
+						placeholder="e.g. ada"
+						required
+					/>
+					<button type="submit">Enter chat</button>
+					<p id="join-error" class="form-error" role="alert" aria-live="polite"></p>
+				</form>
+			</section>
+
+			<section id="chat-screen" class="chat-screen" hidden>
+				<div id="message-list-wrapper" class="message-list-wrapper">
+					<ul id="message-list" class="message-list"></ul>
+				</div>
+				<form id="composer-form" class="composer-form" novalidate>
+					<input
+						id="message-input"
+						name="content"
+						type="text"
+						autocomplete="off"
+						placeholder="Message"
+					/>
+					<button id="composer-submit" type="submit">Send</button>
+				</form>
+				<p id="composer-error" class="form-error" role="alert" aria-live="polite"></p>
+			</section>
+		</main>
+	</div>
+	<script type="module" src="/bundle.js"></script>
 </body>
 </html>
