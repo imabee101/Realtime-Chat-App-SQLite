@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DB_PATH: /app/data/chat.db
+    volumes:
+      - chat-data:/app/data
+
+volumes:
+  chat-data:
