@@ -1,19 +1,16 @@
-FROM node:24-bookworm AS build
+FROM oven/bun:1.4.0 AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 COPY . .
-RUN npm run build
-RUN npm prune --omit=dev
+RUN bun run build
 
-FROM node:24-bookworm-slim
+FROM oven/bun:1.4.0
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build --chown=node:node /app/package.json ./package.json
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --from=build --chown=node:node /app/public ./public
-RUN mkdir -p /app/data && chown node:node /app/data
-USER node
+COPY --from=build --chown=bun:bun /app/dist ./dist
+COPY --from=build --chown=bun:bun /app/public ./public
+RUN mkdir -p /app/data && chown bun:bun /app/data
+USER bun
 EXPOSE 3000
-CMD ["node", "dist/server/index.js"]
+CMD ["bun", "dist/server/index.js"]

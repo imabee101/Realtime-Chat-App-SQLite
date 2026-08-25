@@ -1,44 +1,32 @@
 {
 	"name": "realtime-chat-app-sqlite",
 	"version": "1.0.0",
-	"description": "Realtime chat app built with Express, Socket.IO, and SQLite",
+	"description": "Realtime chat app built with Bun, WebSocket, and SQLite",
 	"type": "module",
 	"engines": {
-		"node": ">=22"
+		"bun": ">=1.4.0"
 	},
+	"packageManager": "bun@1.4.0",
 	"license": "MIT",
 	"scripts": {
-		"dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
-		"dev:server": "tsx watch --env-file=.env src/server/index.ts",
-		"dev:client": "webpack --watch --mode development",
-		"build:server": "tsc -p tsconfig.server.build.json",
-		"build:client": "webpack --mode production",
-		"build": "npm run build:server && npm run build:client",
-		"start": "node dist/server/index.js",
-		"test": "tsx --test \"src/**/*.test.ts\"",
-		"typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+		"dev": "bun run --parallel dev:server dev:client",
+		"dev:server": "test -f .env || { echo '.env: not found'; exit 1; }; bun --watch --env-file=.env src/server/index.ts",
+		"dev:client": "bun build src/client/main.ts --outfile public/bundle.js --target=browser --watch",
+		"build:server": "bun build src/server/index.ts --outdir dist/server --target=bun --production",
+		"build:client": "bun build src/client/main.ts --outfile public/bundle.js --target=browser --minify",
+		"build": "bun run build:server && bun run build:client",
+		"start": "bun dist/server/index.js",
+		"test": "bun test --isolate",
+		"typecheck": "bunx tsc -p tsconfig.server.json --noEmit && bunx tsc -p tsconfig.client.json --noEmit",
 		"lint": "biome lint .",
 		"format": "biome format --write ."
 	},
 	"dependencies": {
-		"better-sqlite3": "13.0.3",
-		"express": "5.2.1",
-		"socket.io": "4.8.3",
-		"socket.io-client": "4.8.3",
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.10",
-		"@fontsource/ibm-plex-mono": "5.3.0",
-		"@fontsource/space-grotesk": "5.3.0",
-		"@types/better-sqlite3": "9.6.0",
-		"@types/express": "5.0.6",
-		"@types/node": "24.13.3",
-		"concurrently": "10.0.5",
-		"ts-loader": "9.6.2",
-		"tsx": "4.23.12",
-		"typescript": "6.0.3",
-		"webpack": "5.109.2",
-		"webpack-cli": "7.2.2"
+		"@types/bun": "1.4.0",
+		"typescript": "6.0.3"
 	}
 }

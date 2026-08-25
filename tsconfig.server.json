@@ -1,12 +1,12 @@
 {
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
 		"lib": ["ES2022"],
-		"types": ["node"],
-		"rootDir": "src",
-		"outDir": "dist"
+		"types": ["bun"],
+		"noEmit": true,
+		"rootDir": "src"
 	},
 	"include": ["src/server/**/*.ts", "src/shared/**/*.ts"]
 }

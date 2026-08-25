@@ -38,6 +38,12 @@ export const messageContentSchema = z.preprocess(
 export const joinPayloadSchema = z.object({ username: usernameSchema });
 export const messagePayloadSchema = z.object({ content: messageContentSchema });
 
+export const clientEnvelopeSchema = z.object({
+	id: z.string().min(1),
+	event: z.enum(["user:join", "chat:message"]),
+	payload: z.unknown(),
+});
+
 export interface ChatMessage {
 	id: number;
 	username: string;
@@ -50,24 +56,15 @@ export type MessageAck =
 	| { ok: true; message: ChatMessage }
 	| { ok: false; error: string };
 
-export interface ClientToServerEvents {
-	"user:join": (
-		payload: { username: string },
-		ack: (res: JoinAck) => void,
-	) => void;
-	"chat:message": (
-		payload: { content: string },
-		ack: (res: MessageAck) => void,
-	) => void;
-}
+export type ClientToServerEnvelope =
+	| { id: string; event: "user:join"; payload: { username: string } }
+	| { id: string; event: "chat:message"; payload: { content: string } };
 
-export interface ServerToClientEvents {
-	"chat:history": (payload: { messages: ChatMessage[] }) => void;
-	"chat:message": (payload: { message: ChatMessage }) => void;
-	"presence:count": (payload: { count: number }) => void;
-}
-
-export type InterServerEvents = Record<string, never>;
+export type ServerToClientEnvelope =
+	| { id: string; event: "ack"; payload: JoinAck | MessageAck }
+	| { event: "chat:history"; payload: { messages: ChatMessage[] } }
+	| { event: "chat:message"; payload: { message: ChatMessage } }
+	| { event: "presence:count"; payload: { count: number } };
 
 export interface SocketData {
 	username?: string;

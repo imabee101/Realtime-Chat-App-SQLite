@@ -1,81 +1,86 @@
-import { describe, test } from "node:test";
-import assert from "node:assert/strict";
+import { describe, expect, test } from "bun:test";
 import { HISTORY_LIMIT } from "../shared/events.js";
 import { createDb } from "./db.js";
 
 describe("insertMessage", () => {
-	test("returns a ChatMessage with a real id and createdAt", (t) => {
+	test("returns a ChatMessage with a real id and createdAt", () => {
 		const db = createDb(":memory:");
-		t.after(() => db.close());
+		try {
+			const message = db.insertMessage("alice", "hello world");
 
-		const message = db.insertMessage("alice", "hello world");
-
-		assert.equal(message.username, "alice");
-		assert.equal(message.content, "hello world");
-		assert.equal(typeof message.id, "number");
-		assert.ok(message.id > 0);
-		assert.equal(typeof message.createdAt, "string");
-		assert.match(
-			message.createdAt,
-			/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
-		);
+			expect(message.username).toBe("alice");
+			expect(message.content).toBe("hello world");
+			expect(typeof message.id).toBe("number");
+			expect(message.id).toBeGreaterThan(0);
+			expect(typeof message.createdAt).toBe("string");
+			expect(message.createdAt).toMatch(
+				/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+			);
+		} finally {
+			db.close();
+		}
 	});
 
-	test("assigns increasing ids across inserts", (t) => {
+	test("assigns increasing ids across inserts", () => {
 		const db = createDb(":memory:");
-		t.after(() => db.close());
+		try {
+			const first = db.insertMessage("alice", "first");
+			const second = db.insertMessage("alice", "second");
 
-		const first = db.insertMessage("alice", "first");
-		const second = db.insertMessage("alice", "second");
-
-		assert.ok(second.id > first.id);
+			expect(second.id).toBeGreaterThan(first.id);
+		} finally {
+			db.close();
+		}
 	});
 });
 
 describe("getRecentMessages", () => {
-	test("returns inserted messages in ascending chronological order", (t) => {
+	test("returns inserted messages in ascending chronological order", () => {
 		const db = createDb(":memory:");
-		t.after(() => db.close());
+		try {
+			db.insertMessage("alice", "first");
+			db.insertMessage("alice", "second");
+			db.insertMessage("alice", "third");
 
-		db.insertMessage("alice", "first");
-		db.insertMessage("alice", "second");
-		db.insertMessage("alice", "third");
+			const recent = db.getRecentMessages();
 
-		const recent = db.getRecentMessages();
-
-		assert.equal(recent.length, 3);
-		assert.deepEqual(
-			recent.map((m) => m.content),
-			["first", "second", "third"],
-		);
-		assert.ok(recent[0].id < recent[1].id);
-		assert.ok(recent[1].id < recent[2].id);
-	});
-
-	test("returns an empty array when no messages exist", (t) => {
-		const db = createDb(":memory:");
-		t.after(() => db.close());
-
-		assert.deepEqual(db.getRecentMessages(), []);
-	});
-
-	test("caps results at HISTORY_LIMIT, keeping the most recent messages oldest-first", (t) => {
-		const db = createDb(":memory:");
-		t.after(() => db.close());
-
-		const totalInserted = HISTORY_LIMIT + 10;
-		for (let i = 0; i < totalInserted; i += 1) {
-			db.insertMessage("alice", `msg-${i}`);
+			expect(recent.length).toBe(3);
+			expect(recent.map((m) => m.content)).toEqual(["first", "second", "third"]);
+			expect(recent[0].id).toBeLessThan(recent[1].id);
+			expect(recent[1].id).toBeLessThan(recent[2].id);
+		} finally {
+			db.close();
 		}
+	});
 
-		const recent = db.getRecentMessages();
+	test("returns an empty array when no messages exist", () => {
+		const db = createDb(":memory:");
+		try {
+			expect(db.getRecentMessages()).toEqual([]);
+		} finally {
+			db.close();
+		}
+	});
 
-		assert.equal(recent.length, HISTORY_LIMIT);
-		assert.equal(recent[0].content, "msg-10");
-		assert.equal(recent[recent.length - 1].content, `msg-${totalInserted - 1}`);
+	test("caps results at HISTORY_LIMIT, keeping the most recent messages oldest-first", () => {
+		const db = createDb(":memory:");
+		try {
+			const totalInserted = HISTORY_LIMIT + 10;
+			for (let i = 0; i < totalInserted; i += 1) {
+				db.insertMessage("alice", `msg-${i}`);
+			}
 
-		for (let i = 1; i < recent.length; i += 1) {
-			assert.ok(recent[i].id > recent[i - 1].id);
+			const recent = db.getRecentMessages();
+
+			expect(recent.length).toBe(HISTORY_LIMIT);
+			expect(recent[0].content).toBe("msg-10");
+			expect(recent[recent.length - 1].content).toBe(`msg-${totalInserted - 1}`);
+
+			for (let i = 1; i < recent.length; i += 1) {
+				expect(recent[i].id).toBeGreaterThan(recent[i - 1].id);
+			}
+		} finally {
+			db.close();
 		}
 	});
 });
