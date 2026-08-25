@@ -1,15 +1,13 @@
 import { createServer } from "./app.js";
 import { env } from "./env.js";
 
-const { httpServer, io, db } = createServer(env.DB_PATH);
+const { server, db } = createServer(env.DB_PATH, env.PORT);
 
-httpServer.listen(env.PORT, () => {
-	console.log(`Server listening on port ${env.PORT}`);
-});
+console.log(`Server listening on port ${server.port}`);
 
 function shutdown(signal: string): void {
 	console.log(`Received ${signal}, shutting down`);
-	io.close(() => {
+	void server.stop(true).then(() => {
 		db.close();
 		process.exit(0);
 	});

@@ -1,30 +1,29 @@
-import { createServer as createHttpServer } from "node:http";
 import path from "node:path";
-import express from "express";
-import { Server } from "socket.io";
-import type {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
-} from "../shared/events.js";
+import type { Server } from "bun";
+import type { SocketData } from "../shared/events.js";
 import { createDb } from "./db.js";
-import { registerSocketHandlers } from "./socket.js";
+import { createWebsocketHandlers } from "./socket.js";
 
-export function createServer(dbPath: string) {
-	const app = express();
-	const httpServer = createHttpServer(app);
-	const io = new Server<
-		ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData
-	>(httpServer);
+export function createServer(dbPath: string, port = 0) {
 	const db = createDb(dbPath);
+	const { websocket, setServer } = createWebsocketHandlers(db);
+	const publicDir = path.join(import.meta.dirname, "../../public");
 
-	app.use(express.static(path.join(import.meta.dirname, "../../public")));
+	const server = Bun.serve<SocketData>({
+		port,
+		hostname: "0.0.0.0",
+		routes: {
+			"/ws": (req: Request, srv: Server<SocketData>) => {
+				if (srv.upgrade(req, { data: {} })) {
+					return undefined;
+				}
+				return new Response("Upgrade failed", { status: 400 });
+			},
+			"/*": { dir: publicDir },
+		},
+		websocket,
+	});
 
-	registerSocketHandlers(io, db);
-
-	return { app, httpServer, io, db };
+	setServer(server);
+	return { server, db };
 }

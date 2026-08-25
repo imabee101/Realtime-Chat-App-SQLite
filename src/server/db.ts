@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import Database from "better-sqlite3";
+import { Database } from "bun:sqlite";
 import { type ChatMessage, HISTORY_LIMIT } from "../shared/events.js";
 
 const SCHEMA = `
@@ -13,16 +13,18 @@ CREATE TABLE IF NOT EXISTS messages (
 `;
 
 export function createDb(path: string) {
-	mkdirSync(dirname(path), { recursive: true });
+	if (path !== ":memory:") {
+		mkdirSync(dirname(path), { recursive: true });
+	}
 
 	const db = new Database(path);
-	db.pragma("journal_mode = WAL");
+	db.exec("PRAGMA journal_mode = WAL");
 	db.exec(SCHEMA);
 
-	const insertStatement = db.prepare<[string, string], ChatMessage>(
+	const insertStatement = db.prepare<ChatMessage, [string, string]>(
 		"INSERT INTO messages (username, content) VALUES (?, ?) RETURNING id, username, content, created_at AS createdAt",
 	);
-	const recentStatement = db.prepare<[number], ChatMessage>(
+	const recentStatement = db.prepare<ChatMessage, [number]>(
 		"SELECT id, username, content, created_at AS createdAt FROM messages ORDER BY id DESC LIMIT ?",
 	);
 

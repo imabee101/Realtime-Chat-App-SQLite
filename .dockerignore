@@ -3,5 +3,9 @@ dist
 .git
 .env
 *.db
+*.db-shm
+*.db-wal
 data/
 src/**/*.test.ts
+public/bundle.js
+package-lock.json
